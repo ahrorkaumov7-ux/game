@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Баланс Природы — 3D-игра «Окружающий мир» 1–4 класс</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--green:#22c55e;--orange:#ff8a3d;--blue:#38bdf8;--purple:#a78bfa;--pink:#fb7185;--yellow:#facc15;--ink:#243b2e}
+body{font-family:'Baloo 2','Nunito',system-ui,sans-serif;background:linear-gradient(180deg,#7dd3fc 0%,#a7f3d0 55%,#fef9c3 100%);color:var(--ink);overflow-x:hidden;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none}
+header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:clamp(18px,3vw,26px);line-height:1}
+.logo span small{display:block;font-size:11px;letter-spacing:.12em;color:#16a34a}
+.logo-badge{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#fef08a,#22c55e 65%);display:grid;place-items:center;font-size:26px;box-shadow:0 6px 0 #15803d}
+.pill{display:flex;align-items:center;gap:6px;background:#fff;border:3px solid #fef08a;border-radius:999px;padding:6px 12px;font-weight:800;box-shadow:0 4px 0 rgba(0,0,0,.08);white-space:nowrap}
+.icon-btn{width:46px;height:46px;border-radius:50%;background:#fff;font-size:22px;box-shadow:0 5px 0 rgba(0,0,0,.12);transition:.15s}
+.icon-btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+.hero{max-width:1220px;margin:0 auto;padding:14px;display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+@media(max-width:860px){.hero{grid-template-columns:1fr}}
+.stage{position:relative;border-radius:32px;overflow:hidden;background:linear-gradient(180deg,#38bdf8,#bae6fd 55%,#86efac);min-height:520px;box-shadow:0 20px 50px rgba(2,132,199,.25),inset 0 0 0 4px rgba(255,255,255,.7)}
+#scene{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.stage-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:5;pointer-events:none}
+.zone-chip{background:rgba(255,255,255,.92);padding:8px 14px;border-radius:999px;font-weight:800;box-shadow:0 5px 0 rgba(0,0,0,.08)}
+.bubble{position:absolute;left:14px;right:14px;bottom:14px;z-index:5;background:rgba(255,255,255,.96);border-radius:24px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.bubble:after{content:"";position:absolute;top:-10px;left:46px;border:10px solid transparent;border-bottom-color:#fff;border-top:0}
+.bubble .face{font-size:38px;line-height:1}
+.bubble b{font-size:18px}
+.bubble p{font-family:Nunito,sans-serif;font-weight:700;color:#475569;line-height:1.35}
+.speak{flex-shrink:0;background:var(--yellow);border-radius:50%;width:48px;height:48px;font-size:22px;box-shadow:0 5px 0 #ca8a04}
+.panel{display:flex;flex-direction:column;gap:14px}
+.card{background:rgba(255,255,255,.92);border-radius:28px;padding:18px;box-shadow:0 14px 35px rgba(0,0,0,.08)}
+.card h2{font-size:24px;line-height:1.1}
+.card p.sub{font-family:Nunito,sans-serif;font-weight:700;color:#64748b}
+.map{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.zone{position:relative;text-align:left;border-radius:24px;padding:16px 14px;color:#fff;min-height:132px;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.15);transition:.15s}
+.zone:active{transform:scale(.97)}
+.zone i{font-style:normal;font-size:42px;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+.zone b{font-size:20px;display:block;line-height:1}
+.zone small{font-family:Nunito,sans-serif;font-weight:800;opacity:.95}
+.zone .done{position:absolute;top:10px;right:10px;background:#fff;color:#16a34a;border-radius:999px;padding:3px 8px;font-size:12px}
+.z-forest{background:linear-gradient(135deg,#22c55e,#15803d)} .z-ocean{background:linear-gradient(135deg,#38bdf8,#0369a1)}
+.z-season{background:linear-gradient(135deg,#fb923c,#db2777)} .z-space{background:linear-gradient(135deg,#8b5cf6,#1e1b4b)}
+.progress{height:18px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:10px}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#facc15,#22c55e);border-radius:999px;transition:.6s}
+.wardrobe{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.item{width:62px;height:62px;border-radius:20px;background:#f1f5f9;font-size:30px;display:grid;place-items:center;border:3px solid transparent;box-shadow:0 5px 0 rgba(0,0,0,.08)}
+.item.on{border-color:var(--yellow);background:#fef9c3;transform:scale(1.05)}
+.item.locked{filter:grayscale(1);opacity:.45}
+.big-btn{background:linear-gradient(180deg,#4ade80,#22c55e);color:#fff;font-size:19px;font-weight:800;border-radius:999px;padding:14px 20px;box-shadow:0 7px 0 #15803d;width:100%}
+.big-btn:active{transform:translateY(5px);box-shadow:0 2px 0 #15803d}
+.ghost-btn{background:#fff;color:var(--ink);font-size:16px;font-weight:800;border-radius:999px;padding:12px 18px;box-shadow:0 6px 0 rgba(0,0,0,.12);border:2px solid #e2e8f0}
+/* GAME */
+#game{display:none}
+#game.open{display:block}
+.game-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.drag-area{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:14px;background:#f0fdf4;border:3px dashed #86efac;border-radius:22px;margin-top:12px;min-height:96px}
+.drag-area.blue{background:#f0f9ff;border-color:#7dd3fc}
+.drag-item{touch-action:none;user-select:none;background:#fff;border:3px solid #e2e8f0;border-radius:20px;padding:10px 12px;text-align:center;font-weight:800;box-shadow:0 6px 0 rgba(0,0,0,.08);cursor:grab;transition:transform .15s,opacity .2s;min-width:86px}
+.drag-item:active{cursor:grabbing}
+.drag-item .em{font-size:38px;display:block;line-height:1.1}
+.drag-item.selected{border-color:var(--yellow);background:#fef9c3;transform:scale(1.08) rotate(-2deg)}
+.drag-item.placed{opacity:.35;pointer-events:none;transform:scale(.85)}
+.drag-item.dragging{position:fixed;z-index:999;pointer-events:none;transform:scale(1.12) rotate(3deg);box-shadow:0 18px 30px rgba(0,0,0,.25)}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media(max-width:420px){.bins{grid-template-columns:1fr}}
+.bin{border-radius:22px;padding:14px;text-align:center;border:4px dashed rgba(0,0,0,.15);min-height:110px;transition:.2s}
+.bin.hover,.bin.selected-bin{transform:scale(1.03);border-color:#fff;box-shadow:0 0 0 4px var(--yellow)}
+.bin .em{font-size:36px}.bin b{display:block}
+.bin .inside{font-size:22px;min-height:28px}
+.slots{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.slot{display:flex;align-items:center;gap:12px;background:#fff7ed;border:3px dashed #fdba74;border-radius:18px;padding:12px;font-weight:800;min-height:58px}
+.slot.filled{background:#dcfce7;border-style:solid;border-color:#22c55e}
+.slot .num{width:36px;height:36px;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;flex-shrink:0}
+.quiz-pic{font-size:76px;text-align:center;background:linear-gradient(180deg,#e0f2fe,#fef9c3);border-radius:24px;padding:18px;margin-top:12px}
+.answers{display:grid;gap:10px;margin-top:12px}
+.answer{background:#fff;border:3px solid #e2e8f0;border-radius:20px;padding:14px;font-size:18px;font-weight:800;text-align:left;box-shadow:0 5px 0 rgba(0,0,0,.07)}
+.answer.good{background:#dcfce7;border-color:#22c55e}.answer.bad{background:#ffe4e6;border-color:#fb7185;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.feedback{margin-top:12px;font-family:Nunito,sans-serif;font-weight:800;text-align:center;min-height:28px}
+.hint{font-size:13px;color:#64748b;text-align:center;margin-top:8px;font-family:Nunito,sans-serif;font-weight:700}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;place-items:center;z-index:100;padding:16px}
+.modal.open{display:grid}
+.modal-box{background:#fff;border-radius:30px;padding:24px;max-width:520px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:pop .35s}
+@keyframes pop{from{transform:scale(.85);opacity:0}}
+.badges{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px 0}
+.badge{width:84px}.badge .ic{width:70px;height:70px;margin:auto;border-radius:50%;display:grid;place-items:center;font-size:34px;background:#fef9c3;border:4px solid #facc15}
+.badge.locked{filter:grayscale(1);opacity:.4}.badge small{font-weight:800;font-size:12px;line-height:1.1;display:block;margin-top:5px}
+.confetti{position:fixed;width:12px;height:16px;z-index:200;pointer-events:none;border-radius:3px}
+footer{text-align:center;padding:18px;font-family:Nunito,sans-serif;font-weight:700;color:#475569}
+.kbd{background:#fff;border-radius:8px;padding:2px 7px;box-shadow:0 2px 0 rgba(0,0,0,.15)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-badge">🌍</div><span>Баланс Природы<small>ОКРУЖАЮЩИЙ МИР • 1–4 КЛАСС</small></span></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+    <div class="pill">⭐ <span id="stars">0</span>/4</div>
+    <div class="pill">🏅 <span id="badgeCount">0</span></div>
+    <button class="icon-btn" id="musicBtn" title="Музыка">🎵</button>
+    <button class="icon-btn" id="voiceBtn" title="Озвучка">🔊</button>
+    <button class="icon-btn" id="diaryBtn" title="Дневник исследователя">📖</button>
+  </div>
+</header>
+
+<main class="hero">
+  <!-- 3D STAGE -->
+  <section class="stage" aria-label="3D мир">
+    <canvas id="scene"></canvas>
+    <div class="stage-top"><div class="zone-chip" id="zoneChip">🏠 Поляна друзей</div><div class="zone-chip">👆 Крути мир пальцем!</div></div>
+    <div class="bubble">
+      <div class="face" id="robotFace">🤖</div>
+      <div style="flex:1"><b id="robotName">Бип • робот-исследователь</b><p id="robotText">Привет! Я Бип! Природа потеряла баланс. Помоги мне посетить Лес, Океан, Времена года и Космос — и собрать Дневник Исследователя!</p></div>
+      <button class="speak" id="speakBtn" title="Послушать">🔊</button>
+    </div>
+  </section>
+
+  <!-- PANEL -->
+  <aside class="panel">
+    <section class="card" id="mapCard">
+      <h2>🗺️ Выбери путешествие</h2><p class="sub">За каждую зону — звезда ⭐, значок 🏅 и новая вещь для Бипа. Ошибок не бойся: здесь можно пробовать снова!</p>
+      <div class="progress"><i id="progressBar"></i></div>
+      <div class="map">
+        <button class="zone z-forest" data-zone="forest"><i>🌳</i><b>Лес</b><small>Сортировка животных</small><span class="done" data-done="forest" hidden>✓ Готово</span></button>
+        <button class="zone z-ocean" data-zone="ocean"><i>🌊</i><b>Океан</b><small>Сортировка мусора</small><span class="done" data-done="ocean" hidden>✓ Готово</span></button>
+        <button class="zone z-season" data-zone="season"><i>🍂</i><b>Времена года</b><small>Круговорот воды</small><span class="done" data-done="season" hidden>✓ Готово</span></button>
+        <button class="zone z-space" data-zone="space"><i>🚀</i><b>Космос</b><small>Викторина планет</small><span class="done" data-done="space" hidden>✓ Готово</span></button>
+      </div>
+      <div style="margin-top:14px"><h3>🎨 Гардероб Бипа</h3><div class="wardrobe" id="wardrobe"></div><p class="hint">Нажимай на открытую вещь — Бип сразу её наденет в 3D!</p></div>
+    </section>
+
+    <!-- GAME PANEL -->
+    <section class="card" id="game">
+      <div class="game-head"><h2 id="gameTitle">Игра</h2><button class="ghost-btn" id="closeGame">✕ Карта</button></div>
+      <p class="sub" id="gameDesc"></p>
+      <div id="gameBody"></div>
+      <div class="feedback" id="feedback"></div>
+      <p class="hint">💡 Можно перетаскивать мышкой или пальцем, а можно: нажми на карточку, потом на нужное место.</p>
+    </section>
+
+    <section class="card">
+      <h2>🌟 Как играть?</h2>
+      <p class="sub">1. Выбери зону на карте &nbsp;•&nbsp; 2. Перетаскивай карточки или отвечай на вопросы &nbsp;•&nbsp; 3. Собирай звёзды и наряжай Бипа!</p>
+      <button class="big-btn" id="resetBtn" style="margin-top:12px;background:linear-gradient(180deg,#fbbf24,#f59e0b);box-shadow:0 7px 0 #b45309">🎲 Играть сначала</button>
+    </section>
+  </aside>
+</main>
+<footer>Сделано для юных исследователей • Управление: мышь, палец, клавиши <span class="kbd">1–4</span> — выбор зоны • Работает на планшете и компьютере</footer>
+
+<!-- DIARY MODAL -->
+<div class="modal" id="diaryModal"><div class="modal-box">
+  <div style="font-size:54px">📖</div><h2>Дневник Исследователя</h2><p class="sub" style="font-family:Nunito;font-weight:700;color:#64748b">Твои награды за восстановление Баланса Природы</p>
+  <div class="badges" id="badges"></div><div id="diaryText" style="font-weight:800"></div>
+  <button class="big-btn" onclick="document.getElementById('diaryModal').classList.remove('open')" style="margin-top:16px">Продолжить приключение!</button>
+</div></div>
+
+<!-- WIN MODAL -->
+<div class="modal" id="winModal"><div class="modal-box">
+  <div style="font-size:64px" id="winEmoji">🏆</div><h2 id="winTitle">Ура!</h2><p id="winText" style="font-family:Nunito;font-weight:700;color:#64748b;margin-top:6px"></p>
+  <button class="big-btn" onclick="document.getElementById('winModal').classList.remove('open')" style="margin-top:16px">Забрать награду ⭐</button>
+</div></div>
+
+<script>
+/* ============ STATE ============ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let state=JSON.parse(localStorage.getItem('balanceNature')||'{"done":{},"outfit":"none"}');
+let musicOn=false, voiceOn=true, currentZone='home';
+const ZONES={
+ forest:{name:'🌳 Лес',title:'🌳 Лес: кто где живёт?',desc:'Перетащи каждое животное в его дом: Лес или Водоём.',reward:'leaf',rewardName:'Листик-шляпа',badge:'🦊',badgeName:'Друг леса'},
+ ocean:{name:'🌊 Океан',title:'🌊 Океан: чистые берега',desc:'Разложи мусор по контейнерам: Пластик, Бумага, Стекло или Еда.',reward:'bubble',rewardName:'Шлем-пузырь',badge:'🐬',badgeName:'Защитник океана'},
+ season:{name:'🍂 Времена года',title:'💧 Круговорот воды в природе',desc:'Поставь этапы по порядку: что происходит сначала, а что потом?',reward:'sun',rewardName:'Солнечные очки',badge:'🌈',badgeName:'Знаток природы'},
+ space:{name:'🚀 Космос',title:'🚀 Космос: викторина планет',desc:'Отвечай на вопросы. Неправильно? Не беда — попробуй ещё раз!',reward:'star',rewardName:'Антенна-звезда',badge:'🪐',badgeName:'Исследователь космоса'}
+};
+function save(){localStorage.setItem('balanceNature',JSON.stringify(state))}
+function stars(){return Object.keys(state.done).length}
+
+/* ============ AUDIO (WebAudio, без файлов) ============ */
+let AC=null, musicTimer=null;
+function ac(){if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC}
+function tone(f,t=0,d=.18,type='sine',v=.15){try{const a=ac(),o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(v,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+d);o.start(a.currentTime+t);o.stop(a.currentTime+t+d)}catch(e){}}
+function sfx(name){if(name==='pop')tone(600,0,.08,'triangle',.12);if(name==='good'){[523,659,784,1047].forEach((f,i)=>tone(f,i*.09,.22,'sine',.16))}if(name==='bad'){tone(220,0,.2,'sine',.08);tone(180,.12,.25,'sine',.08)}if(name==='win'){[523,659,784,1047,1319].forEach((f,i)=>tone(f,i*.11,.3,'triangle',.16))}}
+function toggleMusic(){musicOn=!musicOn;$('#musicBtn').textContent=musicOn?'🎶':'🎵';if(musicOn){const notes=[262,330,392,330,440,392,330,262];let i=0;musicTimer=setInterval(()=>{tone(notes[i%notes.length],0,.35,'triangle',.05);tone(notes[i%notes.length]/2,0,.35,'sine',.03);i++},420)}else clearInterval(musicTimer)}
+$('#musicBtn').onclick=()=>{toggleMusic();sfx('pop')};
+$('#voiceBtn').onclick=e=>{voiceOn=!voiceOn;e.target.textContent=voiceOn?'🔊':'🔇';if(!voiceOn)speechSynthesis.cancel()};
+function say(text){$('#robotText').textContent=text;if(voiceOn&&'speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='ru-RU';u.rate=.95;u.pitch=1.2;speechSynthesis.speak(u)}}
+$('#speakBtn').onclick=()=>say($('#robotText').textContent);
+
+/* ============ THREE.JS PIXAR WORLD ============ */
+let scene,camera,renderer,robot,accessories={},zoneGroups={},eyes=[],clock=new THREE.Clock(),robotBaseY=0,reactUntil=0,reactType='';
+function mat(c,r=.6){return new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:.05})}
+function sphere(c,x,y,z,s,parent){const m=new THREE.Mesh(new THREE.SphereGeometry(s,24,24),mat(c,.45));m.position.set(x,y,z);m.castShadow=true;(parent||scene).add(m);return m}
+function init3D(){
+ const canvas=$('#scene');scene=new THREE.Scene();scene.fog=new THREE.Fog(0xbae6fd,18,36);
+ camera=new THREE.PerspectiveCamera(45,1,.1,100);camera.position.set(0,2.2,8);camera.lookAt(0,1.2,0);
+ renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;
+ scene.add(new THREE.HemisphereLight(0xfff7cc,0x38bdf8,.95));
+ const sun=new THREE.DirectionalLight(0xffe9a8,1.15);sun.position.set(5,9,5);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+ const ground=new THREE.Mesh(new THREE.CircleGeometry(7,.6?32:32),mat(0x4ade80,.9));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+ // ROBOT BIP
+ robot=new THREE.Group();scene.add(robot);
+ const body=sphere(0x38bdf8,0,.95,0,.72,robot);body.scale.y=1.05;
+ sphere(0xffffff,0,2.05,0,.78,robot); // head
+ sphere(0xffd166,0,.55,-.55,.28,robot); // backpack glow
+ // face
+ eyes=[sphere(0x1e293b,-.27,2.15,.68,.11,robot),sphere(0x1e293b,.27,2.15,.68,.11,robot)];
+ sphere(0xffffff,-.30,2.19,.76,.035,robot);sphere(0xffffff,.24,2.19,.76,.035,robot);
+ sphere(0xfb7185,-.52,1.92,.62,.13,robot);sphere(0xfb7185,.52,1.92,.62,.13,robot); // cheeks
+ const mouth=new THREE.Mesh(new THREE.TorusGeometry(.16,.035,10,20,Math.PI),mat(0x1e293b,.4));mouth.position.set(0,1.92,.72);mouth.rotation.z=Math.PI;robot.add(mouth);robot.userData.mouth=mouth;
+ sphere(0xfacc15,0,2.95,0,.13,robot); // antenna ball
+ const ant=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.35),mat(0x94a3b8,.3));ant.position.set(0,2.82,0);robot.add(ant);
+ [-1,1].forEach(s=>{const arm=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.75),mat(0x38bdf8,.5));arm.position.set(s*.82,1.15,0);arm.rotation.z=s*.6;arm.castShadow=true;robot.add(arm);sphere(0xffffff,s*1.05,.82,0,.17,robot);sphere(0x334155,s*.48,.18,0,.22,robot);sphere(0x334155,-s*.48,.18,0,.22,robot)});
+ // accessories
+ const leaf=new THREE.Group();const lm=sphere(0x22c55e,0,2.78,0,.42,robot);lm.scale.set(1.2,.35,1.2);leaf.add(lm);accessories.leaf=robot; // reuse: store meshes
+ accessories={};
+ const gLeaf=new THREE.Group();const leafMesh=new THREE.Mesh(new THREE.SphereGeometry(.45,20,20),mat(0x22c55e,.5));leafMesh.scale.set(1.3,.35,1.3);leafMesh.position.y=2.75;gLeaf.add(leafMesh);robot.add(gLeaf);accessories.leaf=gLeaf;
+ const gBubble=new THREE.Group();const bub=new THREE.Mesh(new THREE.SphereGeometry(.92,24,24),new THREE.MeshStandardMaterial({color:0xbae6fd,transparent:true,opacity:.35,roughness:.1}));bub.position.y=2.05;gBubble.add(bub);robot.add(gBubble);accessories.bubble=gBubble;
+ const gSun=new THREE.Group();[-.27,.27].forEach(x=>{const gl=new THREE.Mesh(new THREE.CircleGeometry(.17,20),mat(0x1e293b,.2));gl.position.set(x,2.15,.78);gSun.add(gl)});robot.add(gSun);accessories.sun=gSun;
+ const gStar=new THREE.Group();const star=sphere(0xfacc15,0,3.15,0,.2,robot);gStar.add(star);robot.add(gStar);accessories.star=gStar;
+ Object.values(accessories).forEach(g=>g.visible=false);
+ // ZONE GROUPS
+ function tree(parent,x,z,s){const g=new THREE.Group();const tr=new THREE.Mesh(new THREE.CylinderGeometry(.14*s,.2*s,1*s),mat(0x92400e,.8));tr.position.y=.5*s;tr.castShadow=true;g.add(tr);sphere(0x22c55e,0,1.5*s,0,.75*s,g);sphere(0x4ade80,-.45*s,1.15*s,0,.5*s,g);sphere(0x16a34a,.45*s,1.2*s,0,.55*s,g);g.position.set(x,0,z);parent.add(g);return g}
+ zoneGroups.forest=new THREE.Group();[[-3,-1.5,1.2],[3,-1.8,1.4],[-2,1.8,.9],[2.6,1.6,1],[-4,.5,.8],[4,.3,.9]].forEach(a=>tree(zoneGroups.forest,...a));scene.add(zoneGroups.forest);
+ zoneGroups.ocean=new THREE.Group();for(let i=0;i<10;i++)sphere(0xfb7185,(Math.random()-.5)*8,.3,-2+Math.random()*3,.25,zoneGroups.ocean);for(let i=0;i<14;i++){const b=sphere(0xe0f2fe,(Math.random()-.5)*8,1+Math.random()*3,(Math.random()-.5)*3,.1,zoneGroups.ocean);b.material=new THREE.MeshStandardMaterial({color:0xe0f2fe,transparent:true,opacity:.6})}scene.add(zoneGroups.ocean);
+ zoneGroups.season=new THREE.Group();tree(zoneGroups.season,-3,-1,1.3);tree(zoneGroups.season,3,-1,1.1);sphere(0xfb923c,-3.5,3.5,-2,.55,zoneGroups.season);for(let i=0;i<8;i++)sphere(0xffffff,(Math.random()-.5)*8,.08,1+Math.random()*2,.12,zoneGroups.season);scene.add(zoneGroups.season);
+ zoneGroups.space=new THREE.Group();const cols=[0xfb7185,0x38bdf8,0xfacc15,0xa78bfa];cols.forEach((c,i)=>{const p=sphere(c,-4.5+i*3,2.5+Math.sin(i)*0.8,-2.5,.55,zoneGroups.space);});for(let i=0;i<60;i++)sphere(0xffffff,(Math.random()-.5)*14,Math.random()*6,-4,.05,zoneGroups.space);scene.add(zoneGroups.space);
+ setZone('home');
+ // drag rotate
+ let drag=false,px=0;canvas.addEventListener('pointerdown',e=>{drag=true;px=e.clientX});window.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointermove',e=>{if(drag&&robot){robot.rotation.y+=(e.clientX-px)*.01;px=e.clientX}});
+ resize();window.addEventListener('resize',resize);animate();
+}
+function resize(){const w=$('.stage').clientWidth,h=$('.stage').clientHeight;renderer.setSize(w,h,false);renderer.setPixelRatio(Math.min(devicePixelRatio,2));camera.aspect=w/h;camera.updateProjectionMatrix()}
+function setZone(z){currentZone=z;Object.values(zoneGroups).forEach(g=>g.visible=false);if(zoneGroups[z])zoneGroups[z].visible=true;const labels={home:'🏠 Поляна друзей',forest:'🌳 Волшебный лес',ocean:'🌊 Океан',season:'🍂 Времена года',space:'🚀 Космос'};$('#zoneChip').textContent=labels[z]||labels.home;$('.stage').style.background=z==='space'?'linear-gradient(180deg,#1e1b4b,#312e81 55%,#7c3aed)':z==='ocean'?'linear-gradient(180deg,#0284c7,#38bdf8 55%,#a5f3fc)':z==='season'?'linear-gradient(180deg,#fdba74,#fde68a 55%,#bbf7d0)':'linear-gradient(180deg,#38bdf8,#bae6fd 55%,#86efac)'}
+function react(type){reactType=type;reactUntil=performance.now()+(type==='happy'?900:600);$('#robotFace').textContent=type==='happy'?'😄':type==='sad'?'🥺':type==='think'?'🤔':'🤖';if(type==='happy')sfx('good');if(type==='sad')sfx('bad')}
+function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();if(robot){robot.position.y=Math.sin(t*2)*.08;robot.rotation.y+=.002;const blink=(Math.sin(t*1.7)>.97)?.15:1;eyes.forEach(e=>e.scale.y=blink);if(performance.now()<reactUntil){if(reactType==='happy')robot.position.y+=Math.abs(Math.sin(t*14))*.35;if(reactType==='sad')robot.rotation.z=Math.sin(t*20)*.04}else robot.rotation.z=0;Object.values(zoneGroups).forEach((g,i)=>{g.children.forEach((c,j)=>{c.position.y+=Math.sin(t*2+j)*.0007})})}
+ renderer.render(scene,camera)}
+
+/* ============ DRAG & DROP (mouse + touch) ============ */
+let selectedItem=null;
+function makeDraggable(el,onDrop){
+ el.addEventListener('click',()=>{if(el.classList.contains('placed'))return;$$('.drag-item').forEach(x=>x.classList.remove('selected'));selectedItem=el;el.classList.add('selected');sfx('pop');say('Отлично! Теперь нажми на нужное место 👇')});
+ let clone=null,sx=0,sy=0,moved=false;
+ el.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;moved=false});
+ el.addEventListener('pointermove',e=>{if(e.buttons!==1&&e.pointerType==='mouse')return;if(!clone&&Math.hypot(e.clientX-sx,e.clientY-sy)>12){clone=el.cloneNode(true);clone.classList.add('dragging');document.body.appendChild(clone);moved=true}if(clone){clone.style.left=(e.clientX-50)+'px';clone.style.top=(e.clientY-40)+'px'}});
+ el.addEventListener('pointerup',e=>{if(clone){const x=e.clientX,y=e.clientY;clone.remove();clone=null;onDrop(x,y,el)}});
+ el._dropCheck=(x,y)=>onDrop(x,y,el);
+}
+function over(el,x,y){const r=el.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom}
+
+/* ============ GAMES ============ */
+function openGame(zone){
+ setZone(zone);$('#game').classList.add('open');$('#gameTitle').textContent=ZONES[zone].title;$('#gameDesc').textContent=ZONES[zone].desc;$('#feedback').textContent='';$('#game').scrollIntoView({behavior:'smooth',block:'nearest'});
+ if(zone==='forest')gameSort([{e:'🦊',n:'Лиса',bin:'forest'},{e:'🐻',n:'Медведь',bin:'forest'},{e:'🦉',n:'Сова',bin:'forest'},{e:'🐸',n:'Лягушка',bin:'water'},{e:'🦆',n:'Утка',bin:'water'},{e:'🐟',n:'Рыба',bin:'water'}],[{id:'forest',e:'🌲',n:'Лес',c:'#dcfce7'},{id:'water',e:'💧',n:'Водоём',c:'#dbeafe'}],'forest');
+ if(zone==='ocean')gameSort([{e:'🥤',n:'Стаканчик',bin:'plastic'},{e:'🧴',n:'Бутылка',bin:'plastic'},{e:'📰',n:'Газета',bin:'paper'},{e:'📦',n:'Коробка',bin:'paper'},{e:'🍾',n:'Бутылка стеклянная',bin:'glass'},{e:'🍌',n:'Кожура банана',bin:'food'}],[{id:'plastic',e:'♻️',n:'Пластик',c:'#fef9c3'},{id:'paper',e:'🗞️',n:'Бумага',c:'#dbeafe'},{id:'glass',e:'🫙',n:'Стекло',c:'#dcfce7'},{id:'food',e:'🍎',n:'Пищевые отходы',c:'#ffe4e6'}],'ocean');
+ if(zone==='season')gameChain();
+ if(zone==='space')gameQuiz();
+ say(ZONES[zone].desc);
+}
+function tryPlace(itemEl,binId,correctBin,totalRef){
+ if(binId===correctBin){itemEl.classList.add('placed');const bin=$(`[data-bin="${binId}"] .inside`);if(bin)bin.textContent+=itemEl.dataset.e+' ';totalRef.done++;$('#feedback').textContent='🎉 Верно! Так держать!';$('#feedback').style.color='#16a34a';react('happy');checkWin(totalRef)}
+ else{$('#feedback').textContent='💛 Почти! Попробуй ещё раз — у тебя получится!';$('#feedback').style.color='#d97706';react('think');say('Не грусти! Подумай: где этому будет лучше? Попробуй ещё раз!')}
+ selectedItem=null;$$('.drag-item').forEach(x=>x.classList.remove('selected'));
+}
+function gameSort(items,bins,zone){
+ const total={done:0,total:items.length,zone};items.sort(()=>Math.random()-.5);
+ $('#gameBody').innerHTML=`<div class="drag-area ${zone==='ocean'?'blue':''}">${items.map(i=>`<div class="drag-item" data-e="${i.e}" data-bin="${i.bin}"><span class="em">${i.e}</span>${i.n}</div>`).join('')}</div><div class="bins">${bins.map(b=>`<div class="bin" data-bin="${b.id}" style="background:${b.c}"><span class="em">${b.e}</span><b>${b.n}</b><div class="inside"></div></div>`).join('')}</div>`;
+ $$('#gameBody .drag-item').forEach(el=>{makeDraggable(el,(x,y,item)=>{const bin=$$('#gameBody .bin').find(b=>over(b,x,y));if(bin)tryPlace(item,bin.dataset.bin,item.dataset.bin,total)})});
+ $$('#gameBody .bin').forEach(bin=>bin.onclick=()=>{if(selectedItem)tryPlace(selectedItem,bin.dataset.bin,selectedItem.dataset.bin,total)});
+}
+function gameChain(){
+ const steps=[{e:'☀️',n:'Солнце нагревает воду'},{e:'💨',n:'Вода испаряется вверх'},{e:'☁️',n:'Появляется облако'},{e:'🌧️',n:'Идёт дождь'},{e:'🌊',n:'Вода возвращается в реку и море'}];
+ const total={done:0,total:steps.length,zone:'season'};let next=0;const shuffled=[...steps].sort(()=>Math.random()-.5);
+ $('#gameBody').innerHTML=`<div class="slots">${steps.map((s,i)=>`<div class="slot" data-slot="${i}"><span class="num">${i+1}</span><span class="slot-text">?</span></div>`).join('')}</div><div class="drag-area">${shuffled.map(s=>`<div class="drag-item" data-e="${s.e}" data-n="${s.n}"><span class="em">${s.e}</span>${s.n}</div>`).join('')}</div>`;
+ function place(item){const idx=steps.findIndex(s=>s.n===item.dataset.n);if(idx===next){const slot=$(`[data-slot="${next}"]`);slot.classList.add('filled');slot.querySelector('.slot-text').textContent=item.dataset.e+' '+item.dataset.n;item.classList.add('placed');next++;total.done++;$('#feedback').textContent='🎉 Верно! Цепочка растёт!';react('happy');checkWin(total)}else{$('#feedback').textContent='💛 Подумай: что происходит сначала? Попробуй другую карточку!';react('think');say('Давай по порядку! Что делает солнышко в самом начале?')}selectedItem=null;$$('.drag-item').forEach(x=>x.classList.remove('selected'))}
+ $$('#gameBody .drag-item').forEach(el=>makeDraggable(el,(x,y,item)=>{if($$('.slot').some(s=>over(s,x,y)))place(item)}));
+ $$('#gameBody .slot').forEach(s=>s.onclick=()=>{if(selectedItem)place(selectedItem)});
+}
+const QUIZ=[{pic:'🌍',q:'На какой планете мы живём?',a:['Земля','Марс','Луна'],ok:0,fact:'Земля — наш дом! На ней есть вода, воздух и жизнь.'},{pic:'🔴',q:'Какую планету называют Красной?',a:['Венера','Марс','Юпитер'],ok:1,fact:'Марс красный из-за рыжей пыли, как ржавчина!'},{pic:'☀️',q:'Что даёт нам свет и тепло?',a:['Луна','Звёзды','Солнце'],ok:2,fact:'Солнце — огромная горячая звезда!'},{pic:'🌙',q:'Что светится ночью и меняет форму?',a:['Луна','Солнце','Радуга'],ok:0,fact:'Луна светится отражённым светом Солнца.'},{pic:'🪐',q:'У какой планеты есть красивые кольца?',a:['Земля','Сатурн','Марс'],ok:1,fact:'Кольца Сатурна — из льда и камней!'},{pic:'🌳',q:'Что нужно беречь, чтобы воздух был чистым?',a:['Машины','Леса и деревья','Мусор'],ok:1,fact:'Деревья очищают воздух и дают дом животным!'}];
+function gameQuiz(){let idx=0,score=0;function render(){if(idx>=QUIZ.length){const total={done:1,total:1,zone:'space'};checkWin(total);return}const q=QUIZ[idx];$('#gameBody').innerHTML=`<div style="text-align:center;font-weight:800">Вопрос ${idx+1} из ${QUIZ.length} • ⭐ ${score}</div><div class="quiz-pic">${q.pic}<div style="font-size:21px;margin-top:6px">${q.q}</div></div><div class="answers">${q.a.map((a,i)=>`<button class="answer" data-i="${i}">${['🅰️','🅱️','🅲️'][i]} ${a}</button>`).join('')}</div>`;say(q.q);$$('.answer').forEach(b=>b.onclick=()=>{if(+b.dataset.i===q.ok){b.classList.add('good');score++;$('#feedback').textContent='🎉 '+q.fact;$('#feedback').style.color='#16a34a';react('happy');setTimeout(()=>{idx++;$('#feedback').textContent='';render()},1700)}else{b.classList.add('bad');$('#feedback').textContent='💛 Хорошая попытка! Попробуй ещё раз!';$('#feedback').style.color='#d97706';react('think');say('Почти! Попробуй ещё раз, я в тебя верю!')}})}render()}
+function checkWin(total){if(total.done>=total.total){sfx('win');completeZone(total.zone)}}
+function completeZone(zone){if(!state.done[zone]){state.done[zone]=true;state.outfit=ZONES[zone].reward;save()}updateUI();confetti();react('happy');$('#winEmoji').textContent=ZONES[zone].badge;$('#winTitle').textContent='Ура! Зона пройдена!';$('#winText').textContent=`Ты получил значок «${ZONES[zone].badgeName}», звезду ⭐ и подарок для Бипа: ${ZONES[zone].rewardName}! ${stars()>=4?'Ты восстановил весь Баланс Природы! Ты — настоящий Исследователь! 🏆':''}`;$('#winModal').classList.add('open');say($('#winText').textContent)}
+function confetti(){const cols=['#facc15','#22c55e','#38bdf8','#fb7185','#a78bfa'];for(let i=0;i<70;i++){const d=document.createElement('div');d.className='confetti';d.style.background=cols[i%cols.length];d.style.left=Math.random()*100+'vw';d.style.top='-20px';document.body.appendChild(d);d.animate([{transform:'translateY(0) rotate(0)'},{transform:`translateY(105vh) rotate(${Math.random()*720-360}deg)`}],{duration:2200+Math.random()*1200,easing:'cubic-bezier(.2,.8,.4,1)'}).onfinish=()=>d.remove()}}
+
+/* ============ UI / PROGRESS ============ */
+const WARDROBE=[{id:'leaf',e:'🍃',name:'Листик'},{id:'bubble',e:'🫧',name:'Шлем'},{id:'sun',e:'🕶️',name:'Очки'},{id:'star',e:'⭐',name:'Звезда'}];
+function applyOutfit(id){state.outfit=id;save();Object.entries(accessories).forEach(([k,g])=>g.visible=(k===id));$$('.item').forEach(el=>el.classList.toggle('on',el.dataset.id===id));if(id!=='none')say('Как я тебе? Мне очень нравится мой новый наряд!')}
+function updateUI(){$('#stars').textContent=stars();$('#badgeCount').textContent=stars();$('#progressBar').style.width=(stars()/4*100)+'%';$$('[data-done]').forEach(el=>el.hidden=!state.done[el.dataset.done]);
+ $('#wardrobe').innerHTML=WARDROBE.map(w=>{const unlocked=Object.keys(state.done).some(z=>ZONES[z].reward===w.id);return `<button class="item ${unlocked?'':'locked'} ${state.outfit===w.id?'on':''}" data-id="${w.id}" title="${w.name}">${unlocked?w.e:'🔒'}</button>`}).join('');
+ $$('.item').forEach(el=>el.onclick=()=>{if(el.classList.contains('locked')){say('Эта вещь пока закрыта. Пройди зону — и она станет твоей!');react('think')}else applyOutfit(el.dataset.id)});
+ Object.entries(accessories).forEach(([k,g])=>g.visible=(k===state.outfit));
+ $('#badges').innerHTML=Object.entries(ZONES).map(([k,z])=>`<div class="badge ${state.done[k]?'':'locked'}"><div class="ic">${z.badge}</div><small>${z.badgeName}</small></div>`).join('');
+ $('#diaryText').textContent=stars()>=4?'🏆 Баланс Природы восстановлен! Ты — настоящий Исследователь!':`Собрано звёзд: ${stars()} из 4. Продолжай приключение!`;
+}
+$$('.zone').forEach(b=>b.onclick=()=>{sfx('pop');openGame(b.dataset.zone)});
+$('#closeGame').onclick=()=>{$('#game').classList.remove('open');setZone('home');say('Выбери следующую зону на карте! Ты отлично справляешься!')};
+$('#diaryBtn').onclick=()=>{$('#diaryModal').classList.add('open');sfx('pop')};
+$('#resetBtn').onclick=()=>{if(confirm('Начать игру сначала? Звёзды и значки сбросятся.')){state={done:{},outfit:'none'};save();updateUI();setZone('home');say('Новое приключение начинается! Выбери зону!')}};
+document.addEventListener('keydown',e=>{const map={'1':'forest','2':'ocean','3':'season','4':'space'};if(map[e.key])openGame(map[e.key])});
+
+/* INIT */
+try{init3D()}catch(e){console.warn('3D fallback',e);$('.stage').style.background='linear-gradient(180deg,#38bdf8,#86efac)'}
+updateUI();
+setTimeout(()=>say('Привет! Я Бип! Помоги мне восстановить Баланс Природы! Выбери зону на карте справа!'),600);
+</script>
+</body>
+</html>
